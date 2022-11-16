@@ -5,7 +5,24 @@ date: "2022-11-10"
 output: github_document
 ---
 
-
+```{r, include = FALSE,message=FALSE,warning=FALSE}
+library(tidyverse)
+library(leaflet)
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%"
+)
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+```
 
 ```{r, include = FALSE, message=FALSE, warning=FALSE}
 library(tidyverse)
@@ -116,16 +133,23 @@ homicide_prop_test
 
 ```{r}
 homicide_prop_test %>% 
-  name = forcats::fct_reorder(name, tmax) %>% 
+  mutate(city_state = forcats::fct_reorder(city_state, estimate)) %>% 
   ggplot(aes(x = city_state, y = estimate))+ 
   geom_point(alpha = .5) +
   geom_boxplot() + 
-  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.8) +
   labs(
-    title = "Temperature plot",
-    x = "Minimum daily temperature (C)",
-    y = "Maxiumum daily temperature (C)",
-    caption = "Data from the rnoaa package"
-  )
+    title = "Estimated Unsolved Homiside Cases Proportion by City State",
+    x = "City, State",
+    y = "Estimated Proportion with 95% CI",
+  ) +
+  theme(legend.position = "bottom",
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
+```
+
+
+## Problem 3
+```{r}
+
 ```
 
