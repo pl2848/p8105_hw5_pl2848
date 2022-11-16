@@ -63,21 +63,49 @@ solved_or_not = function(x){
 # Added a new column to see if the case was solved or unsolved
 homicide_by_city = homicide %>% 
   mutate(status = as.character(map(disposition, solved_or_not))) %>% 
-  group_by(city_state, status) %>% 
-  summarise(number_of_homicides = n())
+  group_by(status, city_state) %>% 
+  summarise(number_of_homicides = n()) %>% 
+  pivot_wider(names_from = status,
+              values_from = number_of_homicides) 
+  
 
-homicide
-homicide_by_city
 
+homicide_by_city_total = homicide %>% 
+  mutate(status = as.character(map(disposition, solved_or_not))) %>% 
+  group_by(city_state) %>% 
+  summarise(number_of_homicides = n()) 
+  
+homicide_df = full_join(homicide_by_city,homicide_by_city_total) %>% 
+  mutate(unsolved = replace_na(unsolved,0))
+homicide_df
 ```
 
+save the output of prop.test as an R object, apply the broom::tidy to this object and pull the estimated proportion and confidence intervals from the resulting tidy dataframe.
 ```{r}
-BMD_unsolved_test = prop.test(1825, 2827, p = NULL,
-          alternative = c("two.sided", "less", "greater"),
-          conf.level = 0.95, correct = TRUE)
+BMD_unsolved_test = prop.test(1825, 2827, p = NULL,alternative = c("two.sided", "less", "greater"),conf.level = 0.95, correct = TRUE)
 
 
 BMD_unsolved_test = broom::tidy(BMD_unsolved_test) %>% 
   select(estimate, conf.low, conf.high)
+
+BMD_unsolved_test
+```
+
+
+Now run prop.test for each of the cities in your dataset, and extract both the proportion of unsolved homicides and the confidence interval for each.
+```{r}
+homicide_list = list(homicide_df$unsolved, homicide_df$number_of_homicides) 
+
+city_prop_test = function(x,y){
+  
+test_data = broom::tidy(prop.test(x, y, p = NULL,alternative = c("two.sided", "less", "greater"),conf.level = 0.95, correct = TRUE)) 
+
+tibble(test_data = broom::tidy(test_data) %>% 
+  select(estimate, conf.low, conf.high))
+
+}
+
+map2(homicide_list[1],homicide_list[2],city_prop_test)
+
 ```
 
