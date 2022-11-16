@@ -258,7 +258,7 @@ null_rej_plot
 Make a plot showing the average estimate of meanon the y axis and the true value of mu on the x axis. Make a second plot (or overlay on the first) the average estimate of means  only in samples for which the null was rejected on the y axis and the true value of mu on the x axis. Is the sample average of means across tests for which the null is rejected approximately equal to the true value of mu? Why or why not?
 
 - The sample average of means for true mean = 4, 5, 6 for which the null is rejected approximately equal to the true value of mu, while the sample average for true mean = 1, 2, 3 were more deviated from the true mean.
-- Because the 
+- I think this is related to the power of the test. The power of test is nearly 1 when the effect size is larger than 4, which means that the proportion of times the null was rejected is nearly 100%, so the average estimated means would be closer to the true mean.
 ```{r}
 library(patchwork)
 
