@@ -150,6 +150,26 @@ homicide_prop_test %>%
 
 ## Problem 3
 ```{r}
+norm_5000 = vector("list", 5000)
 
+
+for (i in 1:5000) {
+  norm_5000[[i]] = rnorm(30, mean = 0, sd = 5)
+  }
+
+
+multi_sample_t_test = function(x) {
+  t.test(x,alternative = "two.sided",mu = 0, conf.level = 0.95) %>% 
+    broom::tidy() %>% 
+    select(estimate, p.value)
+}
+
+sim_5000_t_test = tibble(sample = seq(1:5000),
+       test_result = purrr::map(norm_5000,multi_sample_t_test)) %>% 
+  unnest(test_result)
+
+head(sim_5000_t_test)
 ```
+
+
 
