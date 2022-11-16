@@ -217,7 +217,7 @@ null_rej_plot = sim_results_df %>%
   
   
   
-ggsave("Null rejection proportion.pdf", null_rej_plot, width = 8, height = 5) 
+ggsave("Null rejection proportion.png", null_rej_plot, width = 8, height = 5) 
 null_rej_plot
 ```
 
@@ -240,7 +240,7 @@ mean_esti_null_plot  = sim_results_df %>%
 
 plot_mean = mean_esti_plot + mean_esti_null_plot
 plot_mean
-ggsave("estumated mean vs mu plot.pdf", plot_mean, width = 8, height = 5) 
+ggsave("estumated mean vs mu plot.png", plot_mean, width = 8, height = 5) 
 ```
 
 
