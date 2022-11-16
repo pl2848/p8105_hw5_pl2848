@@ -210,8 +210,8 @@ null_rej_plot = sim_results_df %>%
   ggplot(aes(x = mean, y = rej_prop)) +
   geom_point() +
   labs(
-    title = "the proportion of times the null was rejected (the power of the test) vs the true value of mu",
-    x = "True mu",
+    title = "The power of the test vs the true value of mu",
+    x = "True mean",
     y = "The proportion of times the null was rejected (the power of the test)",
   ) 
   
@@ -227,14 +227,24 @@ mean_esti_plot = sim_results_df %>%
   group_by(mean) %>% 
   summarise(mean_estimate = mean(estimate)) %>% 
   ggplot(aes(x = mean, y = mean_estimate)) +
-  geom_point() 
+  geom_point() +
+  labs(
+    title = "The estimated means (all) vs the true means",
+    x = "True mean",
+    y = "The Estimated Means (all)",
+  ) 
   
 mean_esti_null_plot  = sim_results_df %>% 
   filter(p.value < 0.05) %>% 
   group_by(mean) %>% 
   summarise(mean_estimate = mean(estimate)) %>% 
   ggplot(aes(x = mean, y = mean_estimate)) +
-  geom_point() 
+  geom_point() +
+  labs(
+    title = "The estimated means (for data that reject null) vs the true means",
+    x = "True mean",
+    y = "The Estimated Means (reject null)",
+  ) 
   
 
 
