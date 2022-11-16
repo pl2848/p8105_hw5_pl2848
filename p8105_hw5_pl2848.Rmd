@@ -75,14 +75,16 @@ homicide_by_city_total = homicide %>%
   group_by(city_state) %>% 
   summarise(number_of_homicides = n()) 
   
-homicide_df = full_join(homicide_by_city,homicide_by_city_total) %>% 
-  mutate(unsolved = replace_na(unsolved,0))
+homicide_df = full_join(homicide_by_city,homicide_by_city_total)  
+
+homicide_df[is.na(homicide_df)] <- 0  
 homicide_df
 ```
 
 save the output of prop.test as an R object, apply the broom::tidy to this object and pull the estimated proportion and confidence intervals from the resulting tidy dataframe.
 ```{r}
-BMD_unsolved_test = prop.test(1825, 2827, p = NULL,alternative = c("two.sided", "less", "greater"),conf.level = 0.95, correct = TRUE)
+BMD_unsolved_test = prop.test(1825, 2827, p = NULL,alternative = "two.sided",conf.level = 0.95, correct = TRUE) 
+  
 
 
 BMD_unsolved_test = broom::tidy(BMD_unsolved_test) %>% 
@@ -94,18 +96,36 @@ BMD_unsolved_test
 
 Now run prop.test for each of the cities in your dataset, and extract both the proportion of unsolved homicides and the confidence interval for each.
 ```{r}
-homicide_list = list(homicide_df$unsolved, homicide_df$number_of_homicides) 
 
 city_prop_test = function(x,y){
-  
-test_data = broom::tidy(prop.test(x, y, p = NULL,alternative = c("two.sided", "less", "greater"),conf.level = 0.95, correct = TRUE)) 
-
-tibble(test_data = broom::tidy(test_data) %>% 
-  select(estimate, conf.low, conf.high))
-
+  test_data = prop.test(x, y, p = NULL,conf.level = 0.95, correct = TRUE) %>%
+    broom::tidy()
 }
 
-map2(homicide_list[1],homicide_list[2],city_prop_test)
+homicide_prop_test = 
+tibble(
+  city_state = homicide_df$city_state,
+  test_result = purrr::map2(homicide_df$unsolved,homicide_df$number_of_homicides, city_prop_test)) %>% 
+  unnest(cols = c(test_result)) %>% 
+  select(c(city_state, estimate, conf.low, conf.high))
 
+homicide_prop_test
+
+```
+
+
+```{r}
+homicide_prop_test %>% 
+  name = forcats::fct_reorder(name, tmax) %>% 
+  ggplot(aes(x = city_state, y = estimate))+ 
+  geom_point(alpha = .5) +
+  geom_boxplot() + 
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package"
+  )
 ```
 
