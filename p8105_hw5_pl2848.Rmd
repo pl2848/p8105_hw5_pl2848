@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
   fig.asp = .6,
   out.width = "90%"
 )
-theme_set(theme_minimal() + theme(legend.position = "bottom"))
+theme_set(theme_grey() + theme(legend.position = "bottom"))
 options(
   ggplot2.continuous.colour = "viridis",
   ggplot2.continuous.fill = "viridis"
@@ -164,12 +164,83 @@ multi_sample_t_test = function(x) {
     select(estimate, p.value)
 }
 
-sim_5000_t_test = tibble(sample = seq(1:5000),
+sim_5000_t_test = tibble(mean = 0,
        test_result = purrr::map(norm_5000,multi_sample_t_test)) %>% 
   unnest(test_result)
 
 head(sim_5000_t_test)
 ```
 
+
+Repeat the above for μ={1,2,3,4,5,6}, and complete the following:
+```{r}
+simulations = function(z,n=30, sigma = 5) {
+  
+  sim_data = tibble(
+    x = rnorm(n , mean = z , sd = sigma),
+  )
+  
+    t.test(sim_data, alternative = "two.sided",mu = z, conf.level = 0.95) %>%
+    broom::tidy() %>%
+    select(estimate,p.value)
+}
+
+
+sim_results_df = 
+  expand_grid(
+    mean = c(1,2,3,4,5,6),
+    iter = 1:5000
+  ) %>% 
+  mutate(
+    estimate_df = purrr::map(mean, simulations)
+  ) %>% 
+  unnest(estimate_df)
+
+
+
+```
+
+
+
+```{r}
+null_rej_plot = sim_results_df %>% 
+  filter(p.value < 0.05) %>% 
+  group_by(mean) %>% 
+  summarise(rej_prop = n()/5000) %>% 
+  ggplot(aes(x = mean, y = rej_prop)) +
+  geom_point() +
+  labs(
+    title = "the proportion of times the null was rejected (the power of the test) vs the true value of mu",
+    x = "True mu",
+    y = "The proportion of times the null was rejected (the power of the test)",
+  ) 
+  
+  
+  
+ggsave("Null rejection proportion.pdf", null_rej_plot, width = 8, height = 5) 
+null_rej_plot
+```
+
+```{r}
+library(patchwork)
+mean_esti_plot = sim_results_df %>% 
+  group_by(mean) %>% 
+  summarise(mean_estimate = mean(estimate)) %>% 
+  ggplot(aes(x = mean, y = mean_estimate)) +
+  geom_point() 
+  
+mean_esti_null_plot  = sim_results_df %>% 
+  filter(p.value < 0.05) %>% 
+  group_by(mean) %>% 
+  summarise(mean_estimate = mean(estimate)) %>% 
+  ggplot(aes(x = mean, y = mean_estimate)) +
+  geom_point() 
+  
+
+
+plot_mean = mean_esti_plot + mean_esti_null_plot
+plot_mean
+ggsave("estumated mean vs mu plot.pdf", plot_mean, width = 8, height = 5) 
+```
 
 
